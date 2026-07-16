@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <meta name="theme-color" content="#405943" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="./zz-logo-icon.png" />
+  <title>单品图片编辑器</title>
+  <link rel="stylesheet" href="./card-editor.css?v=1" />
+  <link rel="stylesheet" href="./card-editor-extra.css?v=7" />
+  <link rel="stylesheet" href="./studio-cloud.css?v=1" />
+</head>
+<body>
+  <header class="topbar">
+    <div><p><a href="./studio.html">← 返回产品库</a></p><h1>单品图片编辑器</h1></div>
+    <div class="top-actions"><button id="resetButton" class="ghost">恢复默认版式</button><button id="saveButton" class="ghost">保存草稿</button><button id="previewButton" class="preview-button">预览成品</button><button id="exportButton" class="primary">导出 PNG 图片</button></div>
+  </header>
+
+  <main class="workspace">
+    <aside class="controls">
+      <section class="panel">
+        <div class="panel-title"><span>00</span><h2>画布与模板</h2></div>
+        <div class="form-grid"><label class="wide">尺寸模板<select id="templateSelect"></select></label><label>宽度<input id="canvasWidth" type="number" min="480" max="4000" value="1080"></label><label>高度<input id="canvasHeight" type="number" min="480" max="6000" value="1440"></label><label>背景色<input id="backgroundColor" type="color" value="#f7f2e9"></label></div>
+        <div class="default-layout-card"><div><strong>新产品默认版式</strong><span>新建商品将继承当前画布、板块位置、Logo、水印、字号和显示设置。</span></div><button id="saveDefaultLayout" type="button">设为默认版式</button></div>
+      </section>
+      <section class="panel">
+        <div class="panel-title"><span>01</span><h2>商品图片与排版</h2></div>
+        <label class="upload-box">
+          <strong>上传一张或多张商品图片</strong>
+          <small>可一次选择多张 PNG / JPG / WEBP，上传后可以拖动调整顺序</small>
+          <input id="productImageInput" type="file" accept="image/png,image/jpeg,image/webp" multiple />
+        </label>
+        <label class="library-select">从素材库添加<select id="productAssetSelect"><option value="">选择一张图片加入当前排版</option></select></label>
+        <div class="form-grid image-layout-controls">
+          <label class="wide">图片排版
+            <select id="imageLayout">
+              <option value="auto">自动排版（按图片数量）</option>
+              <option value="single">单图</option>
+              <option value="two-columns">左右两宫格</option>
+              <option value="two-rows">上下两宫格</option>
+              <option value="four-grid">四宫格</option>
+            </select>
+          </label>
+        </div>
+        <div id="productImageList" class="product-image-list" aria-live="polite"></div>
+        <div class="range-row"><label>商品图大小 <output id="imageScaleOutput">100%</output><input id="imageScale" type="range" min="70" max="135" value="100" /></label><label>上下位置 <output id="imageYOutput">0</output><input id="imageY" type="range" min="-80" max="80" value="0" /></label></div>
+        <div class="range-row"><label>图片间距 <output id="imageGapOutput">18</output><input id="imageGap" type="range" min="0" max="48" value="18" /></label></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title"><span>02</span><h2>商品信息</h2></div>
+        <div class="form-grid">
+          <label>分册名称<input id="category" value="奶粉分册" /></label>
+          <label>商品编号<input id="productCode" value="FM-001" /></label>
+          <label>品牌<input id="brand" value="Nutrilon" /></label>
+          <label>规格 / 段数<input id="specification" value="1000g · 1段" /></label>
+          <label>适用年龄<input id="ageRange" placeholder="例如：6–24个月" /></label>
+          <label>商品标签<input id="productTag" list="productTagOptions" placeholder="可选择或自己填写" /><datalist id="productTagOptions"><option value="新生儿必备"></option><option value="好物返场"></option><option value="夏季必备"></option><option value="本周推荐"></option><option value="限时返场"></option></datalist></label>
+          <label class="wide">中文商品名<input id="productName" value="Nutrilon Premium+ 1段婴儿配方奶粉" /></label>
+          <label class="wide">原文名称<input id="originalName" value="Суміш молочна Nutrilon Premium+ 1" /></label>
+          <label>人民币参考价<input id="price" type="number" min="0" value="137" /></label>
+          <label>价格更新日期<input id="updatedAt" type="date" value="2026-07-11" /></label>
+          <label class="wide">具体产品介绍<textarea id="description" rows="7">Nutrilon Premium+ 1段婴儿配方奶粉，原站商品规格为1000g，包装标注适用于0–6个月婴儿。采购前会重点确认段数、包装版本、罐体完整度、生产批次和保质期。奶粉的选择和更换需结合宝宝年龄、当前喂养情况和个体差异，如涉及过敏、特殊配方或喂养问题，请先咨询儿科医生或专业喂养人员。</textarea><small id="descriptionCount">0 / 建议220字以内</small></label>
+          <label class="wide">安全提示<textarea id="safetyNote" rows="3"></textarea></label>
+          <label class="wide">插入文案素材<select id="snippetSelect"><option value="">选择后插入到介绍末尾</option></select></label>
+        </div>
+        <div class="range-row"><label>标题字号 <output id="titleSizeOutput">47</output><input id="titleSize" type="range" min="30" max="72" value="47"></label><label>介绍字号 <output id="descriptionSizeOutput">23</output><input id="descriptionSize" type="range" min="16" max="36" value="23"></label></div>
+        <div class="form-grid"><label>标题颜色<input id="titleColor" type="color" value="#28322b"></label><label>介绍颜色<input id="textColor" type="color" value="#566058"></label><label>介绍对齐<select id="textAlign"><option value="left">左对齐</option><option value="center">居中</option><option value="right">右对齐</option></select></label><label>介绍行距<input id="lineHeight" type="number" min="1" max="2.5" step="0.1" value="1.7"></label></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title"><span>03</span><h2>图片元素库</h2></div>
+        <div class="element-grid">
+          <label class="element-card"><input id="showLogo" type="checkbox" checked /><img src="./zz-logo-icon.png" alt="" /><span><strong>左上角 Logo</strong><small>可选带微信号或纯图标</small></span></label>
+          <label class="element-card"><input id="showWatermark" type="checkbox" checked /><img src="./zz-watermark-icon.png" alt="" /><span><strong>Logo 水印</strong><small>可选带微信号或纯图标</small></span></label>
+          <label class="element-card simple"><input id="showOriginalName" type="checkbox" checked /><span><strong>原文名称</strong><small>可以关闭</small></span></label>
+          <label class="element-card simple"><input id="showSafetyNote" type="checkbox" checked /><span><strong>安全提示框</strong><small>与具体介绍独立排版</small></span></label>
+          <label class="element-card simple"><input id="showAgeRange" type="checkbox" checked /><span><strong>适用年龄</strong><small>独立标签，可移动</small></span></label>
+          <label class="element-card simple"><input id="showProductTag" type="checkbox" checked /><span><strong>商品标签</strong><small>自定义文字，可移动</small></span></label>
+          <label class="element-card simple"><input id="showPrice" type="checkbox" checked /><span><strong>参考价格</strong><small>可以关闭</small></span></label>
+          <label class="element-card simple"><input id="showDivider" type="checkbox" checked /><span><strong>内容分隔线</strong><small>可拖动并调整样式</small></span></label>
+          <label class="element-card simple"><input id="showFooter" type="checkbox" checked /><span><strong>底部询价条</strong><small>保留商品编号</small></span></label>
+          <label class="element-card simple"><input id="showDecoration" type="checkbox" /><span><strong>装饰元素</strong><small>从素材库选择</small></span></label>
+        </div>
+        <div class="form-grid"><label>左上角Logo版本<select id="logoAssetSelect"></select></label><label>水印Logo版本<select id="watermarkAssetSelect"></select></label><label class="wide">装饰元素<select id="decorationAssetSelect"><option value="">尚未选择</option></select></label></div>
+        <div class="range-row"><label>水印深浅 <output id="watermarkOpacityOutput">7%</output><input id="watermarkOpacity" type="range" min="3" max="18" value="7" /></label><label>水印大小 <output id="watermarkSizeOutput">84</output><input id="watermarkSize" type="range" min="45" max="150" value="84" /></label></div>
+        <h3 class="control-subtitle">中间分隔线</h3>
+        <div class="form-grid"><label>线条颜色<input id="dividerColor" type="color" value="#e6ded1"></label><div class="inline-field"><span>提示</span><div class="inline-note">可在画布中直接拖动</div></div></div>
+        <div class="range-row"><label>线条长度 <output id="dividerWidthOutput">100%</output><input id="dividerWidth" type="range" min="25" max="100" value="100" /></label><label>线条粗细 <output id="dividerThicknessOutput">2</output><input id="dividerThickness" type="range" min="1" max="10" value="2" /></label></div>
+        <h3 class="control-subtitle">各板块显示大小</h3>
+        <div class="range-row"><label>左上角Logo <output id="logoSizeOutput">76</output><input id="logoSize" type="range" min="40" max="160" value="76" /></label><label>右上角分类文字 <output id="categorySizeOutput">22</output><input id="categorySize" type="range" min="14" max="40" value="22" /></label></div>
+        <div class="range-row"><label>品牌规格文字 <output id="brandSizeOutput">25</output><input id="brandSize" type="range" min="15" max="42" value="25" /></label><label>原文名称文字 <output id="originalSizeOutput">19</output><input id="originalSize" type="range" min="12" max="34" value="19" /></label></div>
+        <div class="range-row"><label>商品标签文字 <output id="tagSizeOutput">20</output><input id="tagSize" type="range" min="14" max="40" value="20" /></label><label>适用年龄标签 <output id="ageSizeOutput">20</output><input id="ageSize" type="range" min="14" max="40" value="20" /></label></div>
+        <div class="range-row"><label>安全提示文字 <output id="safetySizeOutput">18</output><input id="safetySize" type="range" min="14" max="30" value="18" /></label></div>
+        <div class="range-row"><label>价格数字 <output id="priceSizeOutput">58</output><input id="priceSize" type="range" min="34" max="92" value="58" /></label><label>价格说明与日期 <output id="priceMetaSizeOutput">18</output><input id="priceMetaSize" type="range" min="12" max="30" value="18" /></label></div>
+        <div class="range-row"><label>底部询价条文字 <output id="footerSizeOutput">20</output><input id="footerSize" type="range" min="13" max="36" value="20" /></label><label>装饰元素 <output id="decorationSizeOutput">110</output><input id="decorationSize" type="range" min="50" max="240" value="110" /></label></div>
+        <p class="drag-help">提示：在右侧画布中可直接拖动商品图、Logo、标题、介绍、价格和底部询价条。</p>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title"><span>04</span><h2>智能对齐与辅助线</h2></div>
+        <div class="element-grid guide-options">
+          <label class="element-card simple"><input id="enableSnapping" type="checkbox" checked /><span><strong>智能吸附</strong><small>接近参考线时自动对齐</small></span></label>
+          <label class="element-card simple"><input id="showCenterGuides" type="checkbox" checked /><span><strong>画布中心线</strong><small>横向与纵向正中心</small></span></label>
+          <label class="element-card simple"><input id="showSafeGuides" type="checkbox" /><span><strong>安全边距线</strong><small>显示推荐内容范围</small></span></label>
+        </div>
+        <div class="range-row"><label>吸附灵敏度 <output id="snapThresholdOutput">12</output><input id="snapThreshold" type="range" min="4" max="30" value="12" /></label></div>
+        <div class="guide-legend"><span><i class="center-guide-dot"></i>画布中心</span><span><i class="align-guide-dot"></i>板块对齐</span><span><i class="safe-guide-dot"></i>安全边距</span></div>
+        <div class="keyboard-help"><strong>键盘精细移动</strong><span>单击画布中的板块即可保持选中框，然后使用 ↑ ↓ ← → 移动；按住 Shift 可一次移动 10 像素。</span></div>
+        <p class="drag-help">拖动任意板块时，靠近画布中心、边距或其他板块的边缘与中心，会出现参考线并自动吸附。导出图片不会显示辅助线。</p>
+      </section>
+      <p class="editor-status" id="editorStatus" role="status">修改后会自动更新右侧预览。</p>
+    </aside>
+
+    <section class="preview-column">
+      <div class="preview-head"><div><p>实时预览</p><strong>1080 × 1440 PNG</strong></div><span>导出前请检查文案和价格</span></div>
+      <div class="editor-zoom-bar">
+        <button id="editorZoomOut" type="button" aria-label="缩小画布">−</button>
+        <label><input id="editorCanvasZoom" type="range" min="25" max="180" value="100" aria-label="画布缩放比例"><output id="editorCanvasZoomOutput">100%</output></label>
+        <button id="editorZoomIn" type="button" aria-label="放大画布">＋</button>
+        <button id="editorZoomFit" class="fit-button" type="button">适合窗口</button>
+      </div>
+      <div id="canvasScroll" class="canvas-scroll">
+        <div id="canvasFrame" class="canvas-frame"><canvas id="cardCanvas" width="1080" height="1440" tabindex="0" aria-label="商品图片画布，单击板块后可使用方向键移动"></canvas></div>
+      </div>
+    </section>
+  </main>
+  <dialog id="previewDialog" class="preview-dialog">
+    <div class="preview-dialog-shell">
+      <header class="preview-dialog-head">
+        <div><p>最终成品预览</p><h2 id="previewDialogTitle">干净预览</h2></div>
+        <button id="closePreviewButton" class="preview-close" type="button" aria-label="关闭预览">×</button>
+      </header>
+      <div class="preview-toolbar">
+        <label>预览缩放 <output id="previewZoomOutput">70%</output><input id="previewZoom" type="range" min="35" max="150" value="70"></label>
+        <span id="previewDimensions">1080 × 1440 PNG</span>
+      </div>
+      <div class="preview-stage"><img id="cleanPreviewImage" alt="最终导出图片预览"></div>
+      <footer class="preview-dialog-actions"><button id="closePreviewFooter" class="ghost" type="button">返回编辑</button><button id="exportFromPreview" class="primary" type="button">确认并导出 PNG</button></footer>
+    </div>
+  </dialog>
+  <script src="./studio-cloud-config.js?v=1"></script>
+  <script src="./studio-cloud-api.js?v=1"></script>
+  <script src="./card-editor.js?v=18"></script>
+  <script src="./studio-pwa.js?v=1"></script>
+</body>
+</html>
