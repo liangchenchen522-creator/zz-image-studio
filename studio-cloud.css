@@ -1,0 +1,36 @@
+.cloud-auth-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: linear-gradient(145deg, #eef2e9, #f7f2e9 55%, #f3e4da);
+  font-family: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+}
+.cloud-auth-card {
+  width: min(440px, 100%);
+  padding: 28px;
+  border: 1px solid #ded7cc;
+  border-radius: 24px;
+  background: #fffdf8;
+  box-shadow: 0 24px 70px rgba(40, 50, 43, .16);
+  color: #28322b;
+}
+.cloud-auth-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.cloud-auth-brand img { width: 58px; height: 58px; border-radius: 18px; }
+.cloud-auth-brand strong { display: block; font-size: 20px; }
+.cloud-auth-brand span { color: #758078; font-size: 12px; }
+.cloud-auth-card h1 { margin: 0 0 8px; font-size: 28px; }
+.cloud-auth-card > p { margin: 0 0 20px; color: #747970; line-height: 1.7; }
+.cloud-auth-form { display: grid; gap: 14px; }
+.cloud-auth-form label { display: grid; gap: 7px; color: #666e67; font-size: 13px; font-weight: 700; }
+.cloud-auth-form input { width: 100%; padding: 13px 14px; border: 1px solid #ded7cc; border-radius: 12px; background: #fff; font: inherit; }
+.cloud-auth-actions { display: grid; gap: 10px; }
+.cloud-auth-form button { padding: 13px; border: 1px solid #405943; border-radius: 12px; background: #405943; color: #fff; font: 800 15px inherit; cursor: pointer; }
+.cloud-auth-form button.secondary { background: #fffdf8; color: #405943; }
+.cloud-auth-help { margin: 14px 0 0 !important; color: #858980 !important; font-size: 12px; }
+.cloud-auth-status { min-height: 22px; margin: 14px 0 0 !important; color: #a25a3d !important; font-size: 13px; }
+.cloud-account-badge { position: fixed; right: 16px; bottom: 16px; z-index: 3000; display: flex; align-items: center; gap: 8px; padding: 8px 10px 8px 13px; border: 1px solid #d7ded3; border-radius: 999px; background: rgba(255,253,248,.94); box-shadow: 0 8px 24px rgba(40,50,43,.12); color: #405943; font: 700 12px "PingFang SC","Noto Sans SC",sans-serif; }
+.cloud-account-badge button { border: 0; background: transparent; color: #96533d; font: inherit; cursor: pointer; }
+@media (max-width: 640px) { .cloud-auth-card { padding: 22px; border-radius: 20px; } .cloud-account-badge { right: 10px; bottom: 10px; } }

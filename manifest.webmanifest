@@ -1,0 +1,19 @@
+{
+  "name": "ZZ商品图片工作台",
+  "short_name": "ZZ图片工作台",
+  "description": "电脑与iPhone同步的私人商品图片编辑器",
+  "start_url": "./studio.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f0e9",
+  "theme_color": "#405943",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "./zz-logo-icon.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

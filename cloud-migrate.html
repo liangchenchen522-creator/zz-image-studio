@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>搬移现有资料 · ZZ图片工作台</title>
+  <link rel="stylesheet" href="./studio-cloud.css?v=1">
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#f4f0e9;color:#28322b;font-family:"PingFang SC","Noto Sans SC",sans-serif}.migration-shell{width:min(720px,calc(100% - 28px));margin:40px auto;padding:26px;border:1px solid #e3ddd3;border-radius:22px;background:#fffdf8}.migration-shell a{color:#405943;font-weight:800;text-decoration:none}.migration-shell h1{margin:22px 0 8px}.migration-shell p{color:#747970;line-height:1.8}.migration-steps{display:grid;gap:10px;margin:22px 0}.migration-step{display:flex;gap:12px;padding:13px;border-radius:13px;background:#f3f6f1}.migration-step span{display:grid;place-items:center;flex:0 0 30px;height:30px;border-radius:9px;background:#405943;color:#fff;font-weight:800}.migration-button{width:100%;padding:14px;border:0;border-radius:12px;background:#405943;color:#fff;font-size:16px;font-weight:800}.migration-button:disabled{opacity:.45}.migration-progress{height:12px;margin:18px 0 8px;overflow:hidden;border-radius:99px;background:#e8e4dd}.migration-progress i{display:block;width:0;height:100%;background:#c9774f;transition:width .2s}.migration-status{min-height:48px;padding:12px;border-radius:12px;background:#f7f2e9;color:#5b655d;line-height:1.7}@media(max-width:640px){.migration-shell{margin:14px auto;padding:20px}}
+  </style>
+</head>
+<body>
+  <main class="migration-shell">
+    <a href="./studio.html">← 返回图片工作台</a>
+    <h1>把电脑资料搬到同步版</h1>
+    <p>这个操作只会复制资料，不会删除电脑中的原文件。以后电脑和iPhone登录同一个账号，就能看到相同内容。</p>
+    <div class="migration-steps"><div class="migration-step"><span>1</span><div><strong>读取电脑资料</strong><br><small>商品、文案、模板和历史记录</small></div></div><div class="migration-step"><span>2</span><div><strong>复制图片</strong><br><small>商品图、Logo、水印和导出成品</small></div></div><div class="migration-step"><span>3</span><div><strong>保存到私人账号</strong><br><small>原电脑资料继续保留</small></div></div></div>
+    <button id="startMigration" class="migration-button" type="button">开始复制到同步版</button>
+    <div class="migration-progress"><i id="migrationBar"></i></div>
+    <div class="migration-status" id="migrationStatus">等待开始。</div>
+  </main>
+  <script src="./studio-cloud-config.js?v=1"></script>
+  <script src="./studio-cloud-api.js?v=1"></script>
+  <script src="./cloud-migrate.js?v=1"></script>
+</body>
+</html>
