@@ -176,8 +176,12 @@
     if (!path) return null;
     if (!imageCache.has(path)) {
       const image = new Image();
+      const source = imageUrl(path);
+      // Supabase signed URLs are on a different origin. Request them in CORS
+      // mode before assigning src so the canvas remains exportable.
+      if (/^https?:/i.test(source)) image.crossOrigin = "anonymous";
       image.onload = () => render();
-      image.src = imageUrl(path);
+      image.src = source;
       imageCache.set(path, image);
     }
     return imageCache.get(path);

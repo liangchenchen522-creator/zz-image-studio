@@ -1,4 +1,4 @@
-const CACHE_NAME = "zz-studio-shell-v2";
+const CACHE_NAME = "zz-studio-shell-v3";
 const SHELL = [
   "./studio.html",
   "./card-editor.html",
