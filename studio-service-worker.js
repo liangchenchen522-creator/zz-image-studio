@@ -1,4 +1,4 @@
-const CACHE_NAME = "zz-studio-shell-v4";
+const CACHE_NAME = "zz-studio-shell-v5";
 const SHELL = [
   "./studio.html",
   "./card-editor.html",
@@ -8,6 +8,7 @@ const SHELL = [
   "./studio-cloud.css",
   "./photo-editor.html",
   "./photo-editor.css",
+  "./photo-editor-extra.css",
   "./photo-editor.js",
   "./card-editor.css",
   "./card-editor-extra.css",

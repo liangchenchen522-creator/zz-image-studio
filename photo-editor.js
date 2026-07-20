@@ -177,22 +177,46 @@
     setStatus(message);
   }
 
+  function dataUrlToPngBlob(dataUrl) {
+    const base64 = dataUrl.split(",")[1] || "";
+    const bytes = atob(base64);
+    const buffer = new Uint8Array(bytes.length);
+    for (let index = 0; index < bytes.length; index += 1) buffer[index] = bytes.charCodeAt(index);
+    return new Blob([buffer], { type: "image/png" });
+  }
+
+  function downloadPng(data, filename) {
+    const link = document.createElement("a");
+    link.href = data;
+    link.download = `${filename}.png`;
+    link.click();
+  }
+
   async function exportPng() {
     if (!photo) return setStatus("请先上传一张实拍照片。", true);
     try {
       render();
       const data = canvas.toDataURL("image/png");
       const filename = safeName($("#outputName").value || originalName.replace(/\.[^.]+$/, "") + "-水印版");
-      const link = document.createElement("a");
-      link.href = data;
-      link.download = `${filename}.png`;
-      link.click();
+      const imageBlob = dataUrlToPngBlob(data);
+      const imageFile = new File([imageBlob], `${filename}.png`, { type: "image/png" });
+      let sharePromise = null;
+      if (navigator.share && navigator.canShare?.({ files: [imageFile] })) {
+        setStatus("系统分享窗口已打开，请选择“存储图像”保存到相册。 ");
+        sharePromise = navigator.share({ files: [imageFile], title: filename })
+          .then(() => "shared")
+          .catch((error) => error?.name === "AbortError" ? "cancelled" : "fallback");
+      }
       state.photoDraft = draftFromControls();
       const archived = await window.ZZStudioCloudApi.exportPng(data, filename);
       state.exports = state.exports || [];
       state.exports.push({ id: `photo-export-${Date.now()}`, productCode: "实拍图", brand: filename, width: canvas.width, height: canvas.height, price: 0, path: archived.path, createdAt: new Date().toISOString(), type: "photo" });
       await window.ZZStudioCloudApi.save(state);
-      setStatus(`已导出：${filename}.png`);
+      const shareResult = sharePromise ? await sharePromise : "fallback";
+      if (shareResult === "fallback") downloadPng(data, filename);
+      if (shareResult === "cancelled") setStatus("图片已归档，但你取消了系统分享；需要时可以再次点击导出。 ");
+      else if (shareResult === "shared") setStatus("导出完成。如果刚才选择了“存储图像”，现在可以在相册中查看。 ");
+      else setStatus(`已下载：${filename}.png；如果未进入相册，请使用 Safari 再试。`);
     } catch (error) {
       setStatus(`导出失败：${error.message}`, true);
     }
