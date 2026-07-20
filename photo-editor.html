@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#405943">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <title>实拍图水印制作</title>
+  <link rel="stylesheet" href="./studio-cloud.css?v=1">
+  <link rel="stylesheet" href="./photo-editor.css?v=1">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <a href="./studio.html">← 返回图片工作台</a>
+      <p>实拍照片专用</p>
+      <h1>实拍图水印制作</h1>
+    </div>
+    <div class="top-actions">
+      <button id="saveDraft" class="secondary">保存草稿</button>
+      <button id="exportPng" class="primary">导出 PNG</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="controls">
+      <p id="status" class="status">正在读取资料…</p>
+
+      <section class="panel">
+        <div class="panel-title"><span>01</span><h2>上传实拍照片</h2></div>
+        <label class="upload-box">
+          <strong>选择一张实拍照片</strong>
+          <small>支持手机相册、PNG、JPG、WEBP</small>
+          <input id="photoInput" type="file" accept="image/*">
+        </label>
+        <div class="field two">
+          <label>导出尺寸
+            <select id="outputSize">
+              <option value="2048">最长边 2048（推荐微信）</option>
+              <option value="3000">最长边 3000（高清）</option>
+              <option value="original">保持原图尺寸</option>
+            </select>
+          </label>
+          <label>导出文件名
+            <input id="outputName" value="实拍图-水印版" maxlength="80">
+          </label>
+        </div>
+        <button id="clearPhoto" class="danger ghost" type="button">清空当前照片</button>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title"><span>02</span><h2>Logo 水印</h2></div>
+        <label class="switch-row"><input id="showLogo" type="checkbox" checked><span><strong>显示 Logo 水印</strong><small>可以选择现有 Logo 或上传自己的水印图</small></span></label>
+        <label class="field">水印素材
+          <select id="watermarkSelect"></select>
+        </label>
+        <label class="upload-inline">＋ 上传自定义水印图片<input id="watermarkInput" type="file" accept="image/png,image/jpeg,image/webp"></label>
+        <div class="range-grid">
+          <label>透明度 <output id="opacityValue">12%</output><input id="opacity" type="range" min="2" max="80" value="12"></label>
+          <label>Logo 大小 <output id="logoSizeValue">16%</output><input id="logoSize" type="range" min="4" max="45" value="16"></label>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title"><span>03</span><h2>文字水印</h2></div>
+        <label class="switch-row"><input id="showText" type="checkbox"><span><strong>显示自定义文字</strong><small>可以只用文字，也可以与 Logo 同时使用</small></span></label>
+        <label class="field">水印文字<input id="watermarkText" value="ZZ直邮海外购" maxlength="60"></label>
+        <div class="field two">
+          <label>文字颜色<input id="textColor" type="color" value="#ffffff"></label>
+          <label>文字大小
+            <select id="textSize">
+              <option value="2.2">小</option>
+              <option value="3" selected>中</option>
+              <option value="4.2">大</option>
+              <option value="5.5">特大</option>
+            </select>
+          </label>
+        </div>
+        <label class="switch-row compact"><input id="textShadow" type="checkbox" checked><span><strong>增加描边</strong><small>在深色或浅色照片上都更清楚</small></span></label>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title"><span>04</span><h2>水印排版</h2></div>
+        <div class="field two">
+          <label>显示位置
+            <select id="positionMode">
+              <option value="repeat">满图重复水印</option>
+              <option value="bottom-right">右下角</option>
+              <option value="center">正中间</option>
+              <option value="corners">四个角</option>
+            </select>
+          </label>
+          <label>旋转角度
+            <select id="angle">
+              <option value="-30">向左倾斜</option>
+              <option value="0">水平</option>
+              <option value="30">向右倾斜</option>
+            </select>
+          </label>
+        </div>
+        <div class="range-grid">
+          <label>水印间距 <output id="spacingValue">28%</output><input id="spacing" type="range" min="12" max="60" value="28"></label>
+          <label>边缘距离 <output id="marginValue">5%</output><input id="margin" type="range" min="2" max="18" value="5"></label>
+        </div>
+        <p class="hint">“满图重复”适合防止图片被直接搬用；“右下角”更适合干净的朋友圈实拍图。</p>
+      </section>
+    </aside>
+
+    <section class="preview-area">
+      <div class="preview-head">
+        <div><p>实时预览</p><strong id="canvasInfo">等待上传照片</strong></div>
+        <button id="fitPreview" class="secondary" type="button">适合窗口</button>
+      </div>
+      <div id="canvasViewport" class="canvas-viewport">
+        <div id="emptyPreview" class="empty-preview"><strong>请先上传一张实拍照片</strong><span>照片会完整保留原始比例，不会被压扁。</span></div>
+        <canvas id="photoCanvas" hidden></canvas>
+      </div>
+    </section>
+  </main>
+
+  <script src="./studio-cloud-config.js?v=1"></script>
+  <script src="./studio-cloud-api.js?v=1"></script>
+  <script src="./photo-editor.js?v=1"></script>
+  <script src="./studio-pwa.js?v=1"></script>
+</body>
+</html>

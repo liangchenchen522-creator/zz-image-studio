@@ -1,0 +1,2 @@
+.header-actions{display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-end}
+@media(max-width:600px){.main>header{gap:12px}.header-actions{display:grid}.header-actions a{padding:9px 11px;font-size:12px}}
