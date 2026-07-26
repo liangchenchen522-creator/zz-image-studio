@@ -1040,8 +1040,21 @@
     return data;
   }
 
+  function isMobileCanvas() {
+    return window.matchMedia("(max-width: 640px)").matches;
+  }
+
+  function syncCanvasZoomUi() {
+    const mobile = isMobileCanvas();
+    $("#editorCanvasZoom").min = mobile ? "60" : "25";
+    $("#editorCanvasZoom").max = mobile ? "140" : "180";
+    $("#editorZoomFit").textContent = mobile ? "适合宽度" : "适合窗口";
+  }
+
   function setEditorCanvasZoom(nextZoom, mode = "manual") {
-    const zoom = Math.max(25, Math.min(180, Math.round(Number(nextZoom) || 100)));
+    const minimum = isMobileCanvas() ? 60 : 25;
+    const maximum = isMobileCanvas() ? 140 : 180;
+    const zoom = Math.max(minimum, Math.min(maximum, Math.round(Number(nextZoom) || 100)));
     const viewport = $("#canvasScroll");
     const frame = $("#canvasFrame");
     const centerX = viewport.scrollWidth ? (viewport.scrollLeft + viewport.clientWidth / 2) / viewport.scrollWidth : 0.5;
@@ -1062,6 +1075,14 @@
   function fitEditorCanvasToViewport() {
     const viewport = $("#canvasScroll");
     if (!viewport.clientWidth || !viewport.clientHeight || !canvas.width || !canvas.height) return;
+    if (isMobileCanvas()) {
+      setEditorCanvasZoom(100, "fit");
+      requestAnimationFrame(() => {
+        viewport.scrollLeft = 0;
+        viewport.scrollTop = 0;
+      });
+      return;
+    }
     const availableWidth = Math.max(160, viewport.clientWidth - 38);
     const availableHeight = Math.max(160, viewport.clientHeight - 38);
     const fullWidthHeight = availableWidth * canvas.height / canvas.width + 28;
@@ -1214,7 +1235,12 @@
   $("#editorZoomIn").onclick = () => setEditorCanvasZoom(editorCanvasZoom + 10, "manual");
   $("#editorZoomFit").onclick = fitEditorCanvasToViewport;
   window.addEventListener("resize", () => {
+    syncCanvasZoomUi();
     if (editorZoomMode === "fit") requestAnimationFrame(fitEditorCanvasToViewport);
+  });
+  window.addEventListener("pageshow", () => {
+    syncCanvasZoomUi();
+    if (isMobileCanvas() || editorZoomMode === "fit") requestAnimationFrame(fitEditorCanvasToViewport);
   });
   $("#resetButton").onclick = () => {
     restoreSavedDefaultLayout();
@@ -1361,5 +1387,6 @@
   populateLibraries();
   applyProduct();
   render();
+  syncCanvasZoomUi();
   requestAnimationFrame(fitEditorCanvasToViewport);
 })();
