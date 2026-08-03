@@ -68,6 +68,7 @@
       canvasHeight: record.canvasHeight || 1440,
       settings: { ...BUILTIN_SETTINGS, ...(record.settings || {}) },
       elementOffsets: structuredClone(record.elementOffsets || {}),
+      elementSizes: structuredClone(record.elementSizes || {}),
       savedAt: new Date().toISOString(),
     };
   }
@@ -101,6 +102,7 @@
     canvasWidth: inheritedLayout.canvasWidth || 1080,
     canvasHeight: inheritedLayout.canvasHeight || 1440,
     elementOffsets: structuredClone(inheritedLayout.elementOffsets || {}),
+    elementSizes: structuredClone(inheritedLayout.elementSizes || {}),
     settings: { ...BUILTIN_SETTINGS, ...(inheritedLayout.settings || {}) },
   };
 
@@ -135,6 +137,7 @@
     footer: "底部询价条",
     decoration: "装饰元素",
   };
+  const resizableElements = new Set(["description"]);
 
   const fieldIds = [
     "category", "productCode", "brand", "specification", "ageRange", "productTag", "productName", "originalName",
@@ -303,6 +306,7 @@
       canvasHeight: Math.max(480, Number(value("canvasHeight")) || 1440),
       settings: currentSettings(),
       elementOffsets: product.elementOffsets || {},
+      elementSizes: product.elementSizes || {},
       updatedAtIso: new Date().toISOString(),
     };
   }
@@ -328,6 +332,7 @@
     product.canvasWidth = layout.canvasWidth || 1080;
     product.canvasHeight = layout.canvasHeight || 1440;
     product.elementOffsets = structuredClone(layout.elementOffsets || {});
+    product.elementSizes = structuredClone(layout.elementSizes || {});
     product.settings = { ...BUILTIN_SETTINGS, ...(layout.settings || {}) };
     selectedElementKey = null;
     activeGuides = { vertical: null, horizontal: null };
@@ -392,6 +397,14 @@
 
   function offset(key) {
     return product.elementOffsets?.[key] || { x: 0, y: 0 };
+  }
+
+  function elementSize(key, fallbackWidth, fallbackHeight) {
+    const saved = product.elementSizes?.[key] || {};
+    return {
+      w: Number.isFinite(Number(saved.w)) ? Number(saved.w) : fallbackWidth,
+      h: Number.isFinite(Number(saved.h)) ? Number(saved.h) : fallbackHeight,
+    };
   }
 
   function box(key, x, y, width, height) {
@@ -466,14 +479,53 @@
       ctx.setLineDash([]);
       ctx.fillStyle = "#fff";
       ctx.strokeStyle = "#00a8c6";
-      [[selected.x, selected.y], [selected.x + selected.w, selected.y], [selected.x, selected.y + selected.h], [selected.x + selected.w, selected.y + selected.h]].forEach(([x, y]) => {
-        ctx.beginPath();
-        ctx.arc(x, y, 6, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-      });
+      if (resizableElements.has(selectedElementKey)) {
+        [[selected.x, selected.y], [selected.x + selected.w, selected.y], [selected.x, selected.y + selected.h], [selected.x + selected.w, selected.y + selected.h]].forEach(([x, y]) => {
+          ctx.beginPath();
+          ctx.arc(x, y, 10, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        });
+      }
       ctx.restore();
     }
+  }
+
+  function resizeHandleAt(point) {
+    if (!selectedElementKey || !resizableElements.has(selectedElementKey)) return null;
+    const selected = hitboxes[selectedElementKey];
+    if (!selected) return null;
+    const handles = {
+      nw: { x: selected.x, y: selected.y },
+      ne: { x: selected.x + selected.w, y: selected.y },
+      sw: { x: selected.x, y: selected.y + selected.h },
+      se: { x: selected.x + selected.w, y: selected.y + selected.h },
+    };
+    return Object.entries(handles).find(([, handle]) => Math.hypot(point.x - handle.x, point.y - handle.y) <= 28)?.[0] || null;
+  }
+
+  function resizeSelectedElement(point) {
+    const minimumWidth = 220;
+    const minimumHeight = 80;
+    const deltaX = point.x - drag.startX;
+    const deltaY = point.y - drag.startY;
+    let left = drag.startBox.x;
+    let right = drag.startBox.x + drag.startBox.w;
+    let top = drag.startBox.y;
+    let bottom = drag.startBox.y + drag.startBox.h;
+
+    if (drag.handle.includes("w")) left = Math.min(right - minimumWidth, left + deltaX);
+    if (drag.handle.includes("e")) right = Math.max(left + minimumWidth, right + deltaX);
+    if (drag.handle.includes("n")) top = Math.min(bottom - minimumHeight, top + deltaY);
+    if (drag.handle.includes("s")) bottom = Math.max(top + minimumHeight, bottom + deltaY);
+
+    if (!product.elementSizes) product.elementSizes = {};
+    if (!product.elementOffsets) product.elementOffsets = {};
+    product.elementSizes[drag.key] = { w: right - left, h: bottom - top };
+    product.elementOffsets[drag.key] = {
+      x: drag.base.x + left - drag.startBox.x,
+      y: drag.base.y + top - drag.startBox.y,
+    };
   }
 
   function guideTargets(movingKey) {
@@ -749,12 +801,15 @@
     const safetyBaseY = descriptionBottom - safetyHeight;
     const descriptionLimit = hasSafetyNote ? safetyBaseY - 18 : descriptionBottom;
     const descriptionStartY = dividerY + 25;
-    const descriptionBox = box("description", 78, descriptionStartY, showPrice ? 640 : 924, Math.max(40, descriptionLimit - descriptionStartY));
+    const defaultDescriptionWidth = showPrice ? 640 : 924;
+    const defaultDescriptionHeight = Math.max(40, descriptionLimit - descriptionStartY);
+    const savedDescriptionSize = elementSize("description", defaultDescriptionWidth, defaultDescriptionHeight);
+    const descriptionBox = box("description", 78, descriptionStartY, Math.max(220, savedDescriptionSize.w), Math.max(80, savedDescriptionSize.h));
     ctx.fillStyle = value("textColor");
     font(Number(value("descriptionSize")));
     const description = value("description");
     const descriptionStep = Number(value("descriptionSize")) * Number(value("lineHeight"));
-    const descriptionMaxLines = Math.max(1, Math.floor((descriptionLimit - (descriptionStartY + 25)) / descriptionStep) + 1);
+    const descriptionMaxLines = Math.max(1, Math.floor(Math.max(0, descriptionBox.h - 25) / descriptionStep) + 1);
     const allDescriptionLines = wrap(description, descriptionBox.w, 99);
     const descriptionLines = allDescriptionLines.slice(0, descriptionMaxLines);
     const alignment = value("textAlign");
@@ -864,7 +919,9 @@
     } else if (allDescriptionLines.length > descriptionMaxLines || allSafetyLines.length > 4) {
       status.textContent = "提示：介绍或安全提示超出版面，请减小字号、缩短文案或隐藏其他板块。";
     } else if (selectedElementKey && elementLabels[selectedElementKey]) {
-      status.textContent = `已选择：${elementLabels[selectedElementKey]}。可使用键盘方向键精细移动，Shift＋方向键移动10像素。`;
+      status.textContent = resizableElements.has(selectedElementKey)
+        ? `已选择：${elementLabels[selectedElementKey]}。拖动四角圆点可调整文字框大小；方向键可移动。`
+        : `已选择：${elementLabels[selectedElementKey]}。可使用键盘方向键精细移动，Shift＋方向键移动10像素。`;
     } else {
       status.textContent = "所有内容按同一比例缩放，不会因画布尺寸改变而压扁。";
     }
@@ -1269,6 +1326,22 @@
     }
     canvas.focus({ preventScroll: true });
     const point = pointerToDesign(event);
+    const resizeHandle = resizeHandleAt(point);
+    if (resizeHandle) {
+      const key = selectedElementKey;
+      drag = {
+        mode: "resize",
+        key,
+        handle: resizeHandle,
+        startX: point.x,
+        startY: point.y,
+        base: { ...offset(key) },
+        startBox: { ...hitboxes[key] },
+      };
+      canvas.setPointerCapture(event.pointerId);
+      canvas.classList.add("dragging");
+      return;
+    }
     const key = Object.keys(hitboxes).reverse().find((name) => {
       const hitbox = hitboxes[name];
       return point.x >= hitbox.x && point.x <= hitbox.x + hitbox.w && point.y >= hitbox.y && point.y <= hitbox.y + hitbox.h;
@@ -1315,6 +1388,12 @@
     }
     if (!drag) return;
     const point = pointerToDesign(event);
+    if (drag.mode === "resize") {
+      resizeSelectedElement(point);
+      activeGuides = { vertical: null, horizontal: null };
+      render();
+      return;
+    }
     if (drag.mode === "photo") {
       const targetKey = Object.keys(hitboxes).find((name) => {
         if (!/^photo-\d+$/.test(name)) return false;
