@@ -80,7 +80,10 @@
         : await client.auth.signInWithPassword({ email, password });
       const { data, error } = result;
       if (error) {
-        if (action === "signup" && /already|registered|exists/i.test(error.message || "")) {
+        const message = error.message || "";
+        if (/failed to fetch|fetch failed|network|load failed/i.test(message)) {
+          status.textContent = "账号服务器暂时无法连接。这不是密码错误，请稍后重试或联系管理员恢复同步服务。";
+        } else if (action === "signup" && /already|registered|exists/i.test(message)) {
           status.textContent = "这个邮箱已经创建过账号，请直接点“登录图片工作台”。";
         } else if (action === "login") {
           status.textContent = "登录失败。请检查邮箱和密码；如果是第一次使用，请先创建账号。";
