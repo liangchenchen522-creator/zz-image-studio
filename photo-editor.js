@@ -16,6 +16,15 @@
     status.classList.toggle("error", error);
   }
 
+  function readableError(error) {
+    const message = String(error?.message || error || "未知错误");
+    if (/bucket not found|nosuchbucket/i.test(message)) return "私人图片仓库暂时无法使用，请刷新页面后重试";
+    if (/failed to fetch|fetch failed|network|load failed/i.test(message)) return "网络连接中断，请检查网络后重试";
+    if (/payload too large|file size|maximum.*size|too large/i.test(message)) return "图片文件过大，请选择“最长边 2048”或先在手机中缩小图片";
+    if (/mime|format|decode|unsupported/i.test(message)) return "当前照片格式暂不兼容，请先在手机中截屏或另存为 JPG/PNG 后再上传";
+    return message;
+  }
+
   function safeName(value) {
     return String(value || "实拍图-水印版").replace(/[\\/:*?"<>|]+/g, "-").replace(/^\s+|\s+$/g, "").slice(0, 80) || "实拍图-水印版";
   }
@@ -34,6 +43,25 @@
       image.onerror = () => reject(new Error("图片加载失败，请重新上传。"));
       image.src = source;
     });
+  }
+
+  async function loadPhotoFile(file) {
+    if (!file.type.startsWith("image/") && !/\.(heic|heif|jpe?g|png|webp)$/i.test(file.name || "")) {
+      throw new Error("请选择手机照片、PNG、JPG、WEBP 或 HEIC 图片。");
+    }
+    if (file.size > 50 * 1024 * 1024) {
+      throw new Error("图片超过 50MB，请先在手机相册中截屏或缩小后再上传。");
+    }
+    const localUrl = URL.createObjectURL(file);
+    try {
+      return await loadImage(localUrl);
+    } catch (error) {
+      const isApplePhoto = /\.(heic|heif)$/i.test(file.name || "") || /hei[cf]/i.test(file.type || "");
+      if (isApplePhoto) throw new Error("这张照片是 iPhone 高效格式，当前浏览器无法读取。请先在相册中截屏，或另存为 JPG 后上传。");
+      throw error;
+    } finally {
+      URL.revokeObjectURL(localUrl);
+    }
   }
 
   function draftFromControls() {
@@ -207,18 +235,25 @@
           .then(() => "shared")
           .catch((error) => error?.name === "AbortError" ? "cancelled" : "fallback");
       }
-      state.photoDraft = draftFromControls();
-      const archived = await window.ZZStudioCloudApi.exportPng(data, filename);
-      state.exports = state.exports || [];
-      state.exports.push({ id: `photo-export-${Date.now()}`, productCode: "实拍图", brand: filename, width: canvas.width, height: canvas.height, price: 0, path: archived.path, createdAt: new Date().toISOString(), type: "photo" });
-      await window.ZZStudioCloudApi.save(state);
+      let archiveError = null;
+      try {
+        state.photoDraft = draftFromControls();
+        const archived = await window.ZZStudioCloudApi.exportPng(data, filename);
+        state.exports = state.exports || [];
+        state.exports.push({ id: `photo-export-${Date.now()}`, productCode: "实拍图", brand: filename, width: canvas.width, height: canvas.height, price: 0, path: archived.path, createdAt: new Date().toISOString(), type: "photo" });
+        await window.ZZStudioCloudApi.save(state);
+      } catch (error) {
+        archiveError = error;
+      }
       const shareResult = sharePromise ? await sharePromise : "fallback";
       if (shareResult === "fallback") downloadPng(data, filename);
-      if (shareResult === "cancelled") setStatus("图片已归档，但你取消了系统分享；需要时可以再次点击导出。 ");
+      if (archiveError) {
+        setStatus(`图片已经生成，但云端归档失败：${readableError(archiveError)}。如果系统分享窗口已打开，仍可选择“存储图像”。`, true);
+      } else if (shareResult === "cancelled") setStatus("图片已归档，但你取消了系统分享；需要时可以再次点击导出。 ");
       else if (shareResult === "shared") setStatus("导出完成。如果刚才选择了“存储图像”，现在可以在相册中查看。 ");
       else setStatus(`已下载：${filename}.png；如果未进入相册，请使用 Safari 再试。`);
     } catch (error) {
-      setStatus(`导出失败：${error.message}`, true);
+      setStatus(`导出失败：${readableError(error)}`, true);
     }
   }
 
@@ -226,16 +261,25 @@
     const file = event.target.files?.[0];
     if (!file) return;
     try {
-      setStatus("正在上传并读取实拍照片…");
-      const uploaded = await window.ZZStudioCloudApi.upload(file, file.name, "photo");
-      if (!uploaded.ok) throw new Error(uploaded.error || "上传失败");
-      photoPath = uploaded.path;
+      setStatus("正在读取手机中的照片…");
+      photo = await loadPhotoFile(file);
       originalName = file.name;
-      photo = await loadImage(photoPath);
       if (!$("#outputName").value || $("#outputName").value === "实拍图-水印版") $("#outputName").value = `${file.name.replace(/\.[^.]+$/, "")}-水印版`;
       render();
+      setStatus("照片已读取，正在同步保存…");
+      let uploaded;
+      try {
+        uploaded = await window.ZZStudioCloudApi.upload(file, file.name, "photo");
+        if (!uploaded.ok) throw new Error(uploaded.error || "上传失败");
+      } catch (error) {
+        photoPath = "";
+        setStatus(`照片已读取，可以继续加水印和导出；但云端同步失败：${readableError(error)}。`, true);
+        return;
+      }
+      photoPath = uploaded.path;
       await saveDraft("照片已上传并同步保存。现在可以调整水印。 ");
-    } catch (error) { setStatus(error.message, true); }
+    } catch (error) { setStatus(`读取失败：${readableError(error)}`, true); }
+    finally { event.target.value = ""; }
   });
 
   $("#watermarkInput").addEventListener("change", async (event) => {
@@ -251,7 +295,7 @@
       $("#watermarkSelect").value = uploaded.path;
       await refreshWatermark();
       await saveDraft("自定义水印已上传并保存到素材库。 ");
-    } catch (error) { setStatus(error.message, true); }
+    } catch (error) { setStatus(`水印上传失败：${readableError(error)}`, true); }
   });
 
   controls.forEach((id) => $(`#${id}`).addEventListener("input", () => id === "watermarkSelect" ? refreshWatermark() : render()));
@@ -270,6 +314,6 @@
     render();
     setStatus(photo ? "已恢复上次的实拍图草稿。" : "可以上传实拍照片开始制作。 ");
   } catch (error) {
-    setStatus(`读取失败：${error.message}`, true);
+    setStatus(`读取资料失败：${readableError(error)}。请刷新页面后重试。`, true);
   }
 })();
