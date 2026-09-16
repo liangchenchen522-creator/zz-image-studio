@@ -62,9 +62,11 @@
           <label class="wide">原文名称<input id="originalName" value="Суміш молочна Nutrilon Premium+ 1" /></label>
           <label>人民币参考价<input id="price" type="number" min="0" value="137" /></label>
           <label>价格更新日期<input id="updatedAt" type="date" value="2026-07-11" /></label>
-          <label class="wide">具体产品介绍<textarea id="description" rows="7">Nutrilon Premium+ 1段婴儿配方奶粉，原站商品规格为1000g，包装标注适用于0–6个月婴儿。采购前会重点确认段数、包装版本、罐体完整度、生产批次和保质期。奶粉的选择和更换需结合宝宝年龄、当前喂养情况和个体差异，如涉及过敏、特殊配方或喂养问题，请先咨询儿科医生或专业喂养人员。</textarea><small id="descriptionCount">0 / 建议220字以内</small></label>
+          <label class="wide">具体产品介绍<textarea id="description" rows="7">Nutrilon Premium+ 1段婴儿配方奶粉，原站商品规格为1000g，包装标注适用于0–6个月婴儿。采购前会重点确认段数、包装版本、罐体完整度、生产批次和保质期。奶粉的选择和更换需结合宝宝年龄、当前喂养情况和个体差异，如涉及过敏、特殊配方或喂养问题，请先咨询儿科医生或专业喂养人员。</textarea><small id="descriptionCount">0 字 · 自动分栏可容纳更多内容</small></label>
           <label class="wide">安全提示<textarea id="safetyNote" rows="3"></textarea></label>
           <label class="wide">插入文案素材<select id="snippetSelect"><option value="">选择后插入到介绍末尾</option></select></label>
+          <label>介绍文字分栏<select id="descriptionColumns"><option value="auto">自动（放不下时变两列）</option><option value="one">固定一列</option><option value="two">固定两列</option></select><small id="descriptionLayoutStatus">当前自动使用一列</small></label>
+          <label>两列之间的距离 <output id="descriptionColumnGapOutput">36</output><input id="descriptionColumnGap" type="range" min="16" max="100" value="36"></label>
         </div>
         <div class="range-row"><label>标题字号 <output id="titleSizeOutput">47</output><input id="titleSize" type="range" min="30" max="72" value="47"></label><label>介绍字号 <output id="descriptionSizeOutput">23</output><input id="descriptionSize" type="range" min="16" max="36" value="23"></label></div>
         <div class="form-grid"><label>标题颜色<input id="titleColor" type="color" value="#28322b"></label><label>介绍颜色<input id="textColor" type="color" value="#566058"></label><label>介绍对齐<select id="textAlign"><option value="left">左对齐</option><option value="center">居中</option><option value="right">右对齐</option></select></label><label>介绍行距<input id="lineHeight" type="number" min="1" max="2.5" step="0.1" value="1.7"></label></div>
@@ -143,7 +145,7 @@
   </dialog>
   <script src="./studio-cloud-config.js?v=1"></script>
   <script src="./studio-cloud-api.js?v=1"></script>
-  <script src="./card-editor.js?v=21"></script>
+  <script src="./card-editor.js?v=22"></script>
   <script src="./studio-pwa.js?v=1"></script>
 </body>
 </html>
