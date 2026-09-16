@@ -37,6 +37,8 @@
     textColor: "#566058",
     textAlign: "left",
     lineHeight: 1.7,
+    descriptionColumns: "auto",
+    descriptionColumnGap: 36,
     showLogo: true,
     showWatermark: true,
     showOriginalName: true,
@@ -145,7 +147,7 @@
     "imageLayout", "watermarkOpacity", "watermarkSize", "titleSize", "descriptionSize",
     "logoSize", "categorySize", "brandSize", "tagSize", "ageSize", "safetySize", "originalSize", "priceSize", "priceMetaSize",
     "footerSize", "decorationSize",
-    "titleColor", "textColor", "textAlign", "lineHeight", "canvasWidth", "canvasHeight",
+    "titleColor", "textColor", "textAlign", "lineHeight", "descriptionColumns", "descriptionColumnGap", "canvasWidth", "canvasHeight",
     "backgroundColor", "showLogo", "showWatermark", "showOriginalName", "showSafetyNote", "showProductTag", "showAgeRange", "showPrice",
     "showFooter", "showDecoration", "showDivider", "dividerColor", "dividerWidth",
     "dividerThickness", "enableSnapping", "showCenterGuides", "showSafeGuides", "snapThreshold",
@@ -222,6 +224,8 @@
       textColor: value("textColor"),
       textAlign: value("textAlign"),
       lineHeight: Number(value("lineHeight")),
+      descriptionColumns: value("descriptionColumns"),
+      descriptionColumnGap: Number(value("descriptionColumnGap")),
       showLogo: value("showLogo"),
       showWatermark: value("showWatermark"),
       showOriginalName: value("showOriginalName"),
@@ -393,6 +397,53 @@
       if (current && lines.length < maxLines) lines.push(current);
     }
     return lines;
+  }
+
+  function descriptionColumnSplit(lines, maxLinesPerColumn) {
+    const minimum = Math.max(1, lines.length - maxLinesPerColumn);
+    const maximum = Math.min(maxLinesPerColumn, Math.max(1, lines.length - 1));
+    const target = Math.max(minimum, Math.min(maximum, Math.ceil(lines.length / 2)));
+    let best = target;
+    let bestScore = Infinity;
+    for (let index = minimum; index <= maximum; index += 1) {
+      const paragraphBoundary = lines[index] === "" || lines[index - 1] === "";
+      if (!paragraphBoundary) continue;
+      const score = Math.abs(index - target);
+      if (score < bestScore) {
+        best = index;
+        bestScore = score;
+      }
+    }
+    return best;
+  }
+
+  function descriptionLayout(text, descriptionBox, maxLinesPerColumn) {
+    const requested = value("descriptionColumns");
+    const singleLines = wrap(text, descriptionBox.w, 999);
+    const useTwoColumns = requested === "two" || (requested === "auto" && singleLines.length > maxLinesPerColumn);
+    if (!useTwoColumns) {
+      return {
+        columns: [singleLines.slice(0, maxLinesPerColumn)],
+        columnWidth: descriptionBox.w,
+        gap: 0,
+        totalLines: singleLines.length,
+        overflow: singleLines.length > maxLinesPerColumn,
+        mode: "one",
+      };
+    }
+
+    const gap = Math.max(16, Math.min(100, Number(value("descriptionColumnGap")) || 36));
+    const columnWidth = Math.max(90, (descriptionBox.w - gap) / 2);
+    const lines = wrap(text, columnWidth, 999);
+    const split = descriptionColumnSplit(lines, maxLinesPerColumn);
+    return {
+      columns: [lines.slice(0, split), lines.slice(split, split + maxLinesPerColumn)],
+      columnWidth,
+      gap,
+      totalLines: lines.length,
+      overflow: lines.length > maxLinesPerColumn * 2,
+      mode: "two",
+    };
   }
 
   function offset(key) {
@@ -810,12 +861,18 @@
     const description = value("description");
     const descriptionStep = Number(value("descriptionSize")) * Number(value("lineHeight"));
     const descriptionMaxLines = Math.max(1, Math.floor(Math.max(0, descriptionBox.h - 25) / descriptionStep) + 1);
-    const allDescriptionLines = wrap(description, descriptionBox.w, 99);
-    const descriptionLines = allDescriptionLines.slice(0, descriptionMaxLines);
+    const activeDescriptionLayout = descriptionLayout(description, descriptionBox, descriptionMaxLines);
     const alignment = value("textAlign");
-    const anchor = alignment === "center" ? descriptionBox.x + descriptionBox.w / 2 : alignment === "right" ? descriptionBox.x + descriptionBox.w : descriptionBox.x;
-    ctx.textAlign = alignment;
-    descriptionLines.forEach((line, index) => ctx.fillText(line, anchor, descriptionBox.y + 25 + index * descriptionStep));
+    activeDescriptionLayout.columns.forEach((lines, columnIndex) => {
+      const columnX = descriptionBox.x + columnIndex * (activeDescriptionLayout.columnWidth + activeDescriptionLayout.gap);
+      const anchor = alignment === "center"
+        ? columnX + activeDescriptionLayout.columnWidth / 2
+        : alignment === "right"
+          ? columnX + activeDescriptionLayout.columnWidth
+          : columnX;
+      ctx.textAlign = alignment;
+      lines.forEach((line, index) => ctx.fillText(line, anchor, descriptionBox.y + 25 + index * descriptionStep));
+    });
     ctx.textAlign = "left";
 
     if (hasSafetyNote) {
@@ -895,6 +952,7 @@
     $("#watermarkSizeOutput").value = value("watermarkSize");
     $("#titleSizeOutput").value = value("titleSize");
     $("#descriptionSizeOutput").value = value("descriptionSize");
+    $("#descriptionColumnGapOutput").value = value("descriptionColumnGap");
     $("#logoSizeOutput").value = value("logoSize");
     $("#categorySizeOutput").value = value("categorySize");
     $("#brandSizeOutput").value = value("brandSize");
@@ -909,15 +967,18 @@
     $("#dividerWidthOutput").value = `${value("dividerWidth")}%`;
     $("#dividerThicknessOutput").value = value("dividerThickness");
     $("#snapThresholdOutput").value = value("snapThreshold");
-    $("#descriptionCount").textContent = `${value("description").length} / 建议220字以内`;
+    $("#descriptionCount").textContent = `${value("description").length} 字 · 自动分栏可容纳更多内容`;
+    $("#descriptionLayoutStatus").textContent = value("descriptionColumns") === "auto"
+      ? `当前自动使用${activeDescriptionLayout.mode === "two" ? "两列" : "一列"}`
+      : `当前固定使用${activeDescriptionLayout.mode === "two" ? "两列" : "一列"}`;
     $(".preview-head strong").textContent = `${width} × ${height} PNG · 等比例`;
 
     const layout = value("imageLayout");
     const layoutCapacity = layout === "single" ? 1 : layout.startsWith("two-") ? 2 : layout === "four-grid" ? 4 : Infinity;
     if (product.images.length > layoutCapacity) {
       status.textContent = `当前排版显示前 ${layoutCapacity} 张图片；可调整顺序或选择“自动排版”。`;
-    } else if (allDescriptionLines.length > descriptionMaxLines || allSafetyLines.length > 4) {
-      status.textContent = "提示：介绍或安全提示超出版面，请减小字号、缩短文案或隐藏其他板块。";
+    } else if (activeDescriptionLayout.overflow || allSafetyLines.length > 4) {
+      status.textContent = "提示：两列排版后文字仍超出版面，请增大介绍文字框、减小字号或缩短文案。";
     } else if (selectedElementKey && elementLabels[selectedElementKey]) {
       status.textContent = resizableElements.has(selectedElementKey)
         ? `已选择：${elementLabels[selectedElementKey]}。拖动四角圆点可调整文字框大小；方向键可移动。`
