@@ -1,4 +1,4 @@
-const CACHE_NAME = "zz-studio-shell-v9";
+const CACHE_NAME = "zz-studio-shell-v10";
 const SHELL = [
   "./studio.html",
   "./mobile.html",
