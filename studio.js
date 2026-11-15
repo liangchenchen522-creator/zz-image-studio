@@ -12,10 +12,13 @@ const api = {
 
 const $ = (selector) => document.querySelector(selector);
 const status = $("#status");
+const libraryShortcut=document.querySelector('a[href="./product-warehouse.html"]');
+if(libraryShortcut){libraryShortcut.textContent='管理产品库';libraryShortcut.onclick=event=>{event.preventDefault();setView('warehouse');};}
 const BUILTIN_ASSET_IDS = new Set(["logo-main", "logo-with-wechat", "watermark-main", "watermark-with-wechat"]);
 const TRASH_LIFETIME = 7 * 24 * 60 * 60 * 1000;
 const entityConfig = {
   product: { list: "products", label: "产品" },
+  warehouseProduct: { list: "warehouseProducts", label: "产品库商品" },
   asset: { list: "assets", label: "图片素材" },
   snippet: { list: "snippets", label: "文案片段" },
   copyTemplate: { list: "copyTemplates", label: "文案模板" },
@@ -48,7 +51,7 @@ function fileData(file) {
 function mediaUrl(path) { return window.ZZStudioCloudApi.resolvePath(path); }
 
 function normalizeState() {
-  ["products", "assets", "snippets", "copyTemplates", "templates", "exports", "trash"].forEach((key) => {
+  ["products", "warehouseProducts", "assets", "snippets", "copyTemplates", "templates", "exports", "trash"].forEach((key) => {
     if (!Array.isArray(state[key])) state[key] = [];
   });
   const now = Date.now();
@@ -78,12 +81,16 @@ function trashItem(entityType, data, label, extra = {}) {
   });
 }
 
-function setView(view) {
+async function setView(view) {
+  if(currentView==='warehouse'&&view!=='warehouse'){
+    try{state=await api.state();normalizeState();}catch(error){status.textContent=`刷新资料失败：${error.message}`;return;}
+  }
   currentView = view;
   document.querySelectorAll(".side nav button").forEach((button) => button.classList.toggle("active", button.dataset.view === view));
   document.querySelectorAll(".view").forEach((item) => item.classList.remove("active"));
   $(`#${view}View`).classList.add("active");
-  const titles = { products: "产品库", assets: "图片素材", copy: "文案素材", templates: "图片模板", exports: "导出历史", trash: "垃圾箱", backup: "备份与恢复" };
+  const titles = { products: "图片作品", warehouse: "产品库", assets: "图片素材", copy: "文案素材", templates: "图片模板", exports: "导出历史", trash: "垃圾箱", backup: "备份与恢复" };
+  if(view==='warehouse'){const frame=$('#warehouseFrame');frame.src=frame.dataset.src;}
   $("#viewTitle").textContent = titles[view];
   render();
 }
@@ -113,7 +120,7 @@ function renderProducts() {
       <h3>${esc(product.name)}</h3>
       <p>${esc(product.brand)} · ${esc(product.specification)}${product.ageRange ? ` · ${esc(product.ageRange)}` : ""} · ¥${Number(product.price || 0)}</p>
       ${product.productTag ? `<div class="product-tag-chip">${esc(product.productTag)}</div>` : ""}
-      <div class="card-actions"><a class="edit" href="./card-editor.html?id=${encodeURIComponent(product.id)}&build=editor-v16">打开编辑</a><button data-copy-product="${esc(product.id)}">复制</button><button class="danger" data-delete-product="${esc(product.id)}">删除</button></div>
+      <div class="card-actions"><a class="edit" href="./${product.cardComposition?'product-cards':'card-editor'}.html?id=${encodeURIComponent(product.id)}&build=cards-v1">打开编辑</a><button data-copy-product="${esc(product.id)}">复制</button><button class="danger" data-delete-product="${esc(product.id)}">删除</button></div>
     </article>`).join("") : "<p>还没有符合条件的产品。</p>";
 }
 
@@ -140,7 +147,7 @@ function renderExports() {
 
 function trashThumbnail(item) {
   const data = item.data || {};
-  const path = item.entityType === "product" ? data.image : item.entityType === "asset" ? data.path : item.entityType === "export" ? data.path : item.entityType === "productImage" ? data.path : "";
+  const path = ["product", "warehouseProduct"].includes(item.entityType) ? data.image : item.entityType === "asset" ? data.path : item.entityType === "export" ? data.path : item.entityType === "productImage" ? data.path : "";
   return path ? `<img src="${esc(mediaUrl(path))}" alt="">` : `<span class="trash-icon">↩</span>`;
 }
 
@@ -158,10 +165,16 @@ function openForm(title, fields, onSave) {
   $("#dialogFields").innerHTML = fields.map((field) => `<label class="dialog-field">${field.label}${field.type === "textarea" ? `<textarea name="${field.name}">${esc(field.value || "")}</textarea>` : `<input name="${field.name}" type="${field.type || "text"}" value="${esc(field.value || "")}">`}</label>`).join("");
   const dialog = $("#formDialog");
   dialog.showModal();
-  $("#miniForm").onsubmit = (event) => {
+  $("#miniForm").onsubmit = async (event) => {
     event.preventDefault();
-    onSave(Object.fromEntries(new FormData(event.currentTarget).entries()));
-    dialog.close();
+    if (event.submitter?.value === "cancel") { dialog.close(); return; }
+    const values = Object.fromEntries(new FormData(event.currentTarget).entries());
+    if (!String(values.name || "").trim()) { alert("请填写名称。"); return; }
+    if ("width" in values && (!Number.isFinite(Number(values.width)) || !Number.isFinite(Number(values.height)) || Number(values.width)<100 || Number(values.height)<100 || Number(values.width)>4000 || Number(values.height)>4000)) { alert("宽高请填写100至4000之间的数字。"); return; }
+    const before=structuredClone(state),button=$("#dialogSave");button.disabled=true;
+    try { await onSave(values); dialog.close(); }
+    catch(error) { state=before;render();status.textContent=`保存失败：${error.message}。表单仍然保留。`; }
+    finally { button.disabled=false; }
   };
 }
 
@@ -315,6 +328,7 @@ $("#restoreInput").onchange = async (event) => {
   try {
     const next = JSON.parse(await event.target.files[0].text());
     if (!next.products || !next.templates) throw new Error();
+    next.cloudRevision = state.cloudRevision;
     state = next;
     normalizeState();
     await persist("备份已恢复。");
@@ -325,7 +339,9 @@ $("#restoreInput").onchange = async (event) => {
 
 api.state().then((loadedState) => {
   state = loadedState;
+  $('#viewTitle').textContent='图片作品';
   normalizeState();
   status.textContent = `已读取 ${state.products.length} 件产品、${state.assets.length} 个素材。`;
   render();
-}).catch((error) => { status.textContent = `无法连接本地数据服务：${error.message}`; });
+  if(new URLSearchParams(location.search).get('view')==='warehouse')setView('warehouse');
+}).catch((error) => { status.textContent = `无法读取同步资料：${error.message}。请检查网络后刷新重试。`; });

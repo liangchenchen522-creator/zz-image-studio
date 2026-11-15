@@ -1,5 +1,12 @@
-const CACHE_NAME = "zz-studio-shell-v10";
+const CACHE_NAME = "zz-studio-shell-20261115-release1";
 const SHELL = [
+  "./product-cards.html",
+  "./product-cards.css",
+  "./product-cards.js",
+  "./product-creative-templates.js",
+  "./product-warehouse.html",
+  "./product-warehouse.js",
+  "./product-library-manager.js",
   "./studio.html",
   "./mobile.html",
   "./card-editor.html",
@@ -36,8 +43,7 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (event.request.method !== "GET" || url.origin !== location.origin || url.pathname.startsWith("/api/")) return;
   event.respondWith(fetch(event.request).then((response) => {
-    const copy = response.clone();
-    caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+    if(response.ok){const copy=response.clone();event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy)));}
     return response;
-  }).catch(() => caches.match(event.request).then((cached) => cached || caches.match("./studio.html"))));
+  }).catch(async () => (await caches.match(event.request)) || (await caches.match(event.request,{ignoreSearch:true})) || (event.request.mode==='navigate' ? (await caches.match("./studio.html")) : Response.error())));
 });
