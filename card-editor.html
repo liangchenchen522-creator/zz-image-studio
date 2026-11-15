@@ -9,7 +9,7 @@
   <link rel="apple-touch-icon" href="./zz-logo-icon.png" />
   <title>单品图片编辑器</title>
   <link rel="stylesheet" href="./card-editor.css?v=1" />
-  <link rel="stylesheet" href="./card-editor-extra.css?v=7" />
+  <link rel="stylesheet" href="./card-editor-extra.css?v=mobile-20261115" />
   <link rel="stylesheet" href="./studio-cloud.css?v=1" />
 </head>
 <body>
@@ -30,7 +30,7 @@
         <label class="upload-box">
           <strong>上传一张或多张商品图片</strong>
           <small>可一次选择多张 PNG / JPG / WEBP，上传后可以拖动调整顺序</small>
-          <input id="productImageInput" type="file" accept="image/png,image/jpeg,image/webp" multiple />
+          <input id="productImageInput" type="file" accept="image/*" multiple />
         </label>
         <label class="library-select">从素材库添加<select id="productAssetSelect"><option value="">选择一张图片加入当前排版</option></select></label>
         <div class="form-grid image-layout-controls">
@@ -145,7 +145,7 @@
   </dialog>
   <script src="./studio-cloud-config.js?v=1"></script>
   <script src="./studio-cloud-api.js?v=1"></script>
-  <script src="./card-editor.js?v=22"></script>
+  <script src="./studio-image-upload.js?v=mobile-20261115"></script><script src="./card-editor.js?v=mobile-20261115"></script>
   <script src="./studio-pwa.js?v=1"></script>
 </body>
 </html>

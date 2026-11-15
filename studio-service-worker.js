@@ -1,4 +1,4 @@
-const CACHE_NAME = "zz-studio-shell-20261115-release2";
+const CACHE_NAME = "zz-studio-shell-20261115-mobile3";
 const SHELL = [
   "./product-cards.html",
   "./product-cards.css",
@@ -7,6 +7,7 @@ const SHELL = [
   "./product-warehouse.html",
   "./product-warehouse.js",
   "./product-library-manager.js",
+  "./studio-image-upload.js",
   "./studio.html",
   "./mobile.html",
   "./card-editor.html",

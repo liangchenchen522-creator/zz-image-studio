@@ -1135,7 +1135,8 @@
   async function uploadProductImages(files) {
     const uploaded = [];
     status.textContent = `正在上传 ${files.length} 张图片…`;
-    for (const file of files) {
+    for (const originalFile of files) {
+      const file = await window.ZZStudioImageUpload.prepare(originalFile);
       const data = await fileToDataUrl(file);
       const output = await window.ZZStudioCloudApi.uploadData(data, file.name, "product");
       if (!output.ok) throw new Error(output.error);
