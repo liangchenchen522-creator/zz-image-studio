@@ -1,7 +1,7 @@
 (async function(){
  const $=s=>document.querySelector(s),api=window.ZZStudioCloudApi;
  if(matchMedia('(max-width:800px)').matches)$('#libraryForm').open=false;
- if(new URLSearchParams(location.search).has('embed')){document.querySelector('header').hidden=true;document.querySelector('main').style.padding='12px';}
+ if(new URLSearchParams(location.search).has('embed')){document.body.classList.add('embedded-library');document.querySelector('header').hidden=true;document.querySelector('main').style.padding='12px';}
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const uid=()=>`WH-${crypto.randomUUID?.()||Date.now().toString(36)+Math.random().toString(36).slice(2)}`;
  let state,busy=false,editingId=null;const selected=new Set();

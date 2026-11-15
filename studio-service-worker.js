@@ -1,4 +1,4 @@
-const CACHE_NAME = "zz-studio-shell-20261115-release1";
+const CACHE_NAME = "zz-studio-shell-20261115-release2";
 const SHELL = [
   "./product-cards.html",
   "./product-cards.css",
