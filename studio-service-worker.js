@@ -1,6 +1,8 @@
-const CACHE_NAME = "zz-studio-shell-20261115-food1";
+const CACHE_NAME = "zz-studio-shell-20261116-catalog-fixes1";
 const SHELL = [
   "./antoshka-food.html",
+  "./roshen-chocolate.html",
+  "./catalog-title-editor.js",
   "./product-cards.html",
   "./product-cards.css",
   "./product-cards.js",

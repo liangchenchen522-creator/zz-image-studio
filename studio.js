@@ -82,12 +82,13 @@ function trashItem(entityType, data, label, extra = {}) {
 }
 
 async function setView(view) {
-  if(view==='roshen'&&window.matchMedia('(max-width:760px)').matches){location.href='./roshen-chocolate.html?build=catalog-titles1';return;}
-  if(view==='food'&&window.matchMedia('(max-width:760px)').matches){location.href='./antoshka-food.html?build=catalog-titles1';return;}
+  if(view==='roshen'&&window.matchMedia('(max-width:760px)').matches){location.href='./roshen-chocolate.html?build=catalog-fixes1';return;}
+  if(view==='food'&&window.matchMedia('(max-width:760px)').matches){location.href='./antoshka-food.html?build=catalog-fixes1';return;}
   if(currentView==='warehouse'&&view!=='warehouse'){
     try{state=await api.state();normalizeState();}catch(error){status.textContent=`刷新资料失败：${error.message}`;return;}
   }
   currentView = view;
+  const viewUrl=new URL(location.href);viewUrl.searchParams.set("view",view);history.replaceState(null,"",viewUrl);
   document.querySelectorAll(".side nav button").forEach((button) => button.classList.toggle("active", button.dataset.view === view));
   document.querySelectorAll(".view").forEach((item) => item.classList.remove("active"));
   $(`#${view}View`).classList.add("active");
@@ -348,5 +349,5 @@ api.state().then((loadedState) => {
   status.textContent = `已读取 ${state.products.length} 件产品、${state.assets.length} 个素材。`;
   render();
   const requestedView=new URLSearchParams(location.search).get('view');
-  if(['warehouse','food','roshen'].includes(requestedView))setView(requestedView);
+  if(['products','warehouse','food','roshen','assets','copy','templates','exports','trash','backup'].includes(requestedView))setView(requestedView);
 }).catch((error) => { status.textContent = `无法读取同步资料：${error.message}。请检查网络后刷新重试。`; });
