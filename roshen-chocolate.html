@@ -114,4 +114,4 @@ const shareHint=document.createElement('p');shareHint.className='muted';shareHin
 // Selection and image edits stay on this device; the source catalogue is read-only.
 const selectionKey='zz-roshen-selection-20261116';try{const saved=JSON.parse(localStorage.getItem(selectionKey)||'[]');for(const url of saved)if(uniqueRows.has(url))chosen.add(url)}catch{}const renderAndSave=render;render=function(){renderAndSave();try{localStorage.setItem(selectionKey,JSON.stringify([...chosen]))}catch{}};render();
 if(window.ZZStudioCloudApi?.isCloud())window.ZZStudioCloudApi.requireSession().catch(()=>{$('exportStatus').textContent='账号暂时无法连接，请刷新重试。'});
-</script></html>
+</script><script src="./catalog-title-editor.js?v=titles1"></script></html>
