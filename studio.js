@@ -82,8 +82,8 @@ function trashItem(entityType, data, label, extra = {}) {
 }
 
 async function setView(view) {
-  if(view==='roshen'&&window.matchMedia('(max-width:760px)').matches){location.href='./roshen-chocolate.html?build=toothpaste-facts2';return;}
-  if(view==='food'&&window.matchMedia('(max-width:760px)').matches){location.href='./antoshka-food.html?build=toothpaste-facts2';return;}
+  if(view==='roshen'&&window.matchMedia('(max-width:760px)').matches){location.href='./roshen-chocolate.html?build=catalog-copy-editor1';return;}
+  if(view==='food'&&window.matchMedia('(max-width:760px)').matches){location.href='./antoshka-food.html?build=catalog-copy-editor1';return;}
   if(currentView==='warehouse'&&view!=='warehouse'){
     try{state=await api.state();normalizeState();}catch(error){status.textContent=`刷新资料失败：${error.message}`;return;}
   }
