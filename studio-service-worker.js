@@ -1,5 +1,7 @@
-const CACHE_NAME = "zz-studio-shell-20261121-tabletki1";
+const CACHE_NAME = "zz-studio-shell-20261121-import1";
 const SHELL = [
+  "./catalog-link-import.js",
+  "./catalog-personal-bootstrap.js",
   "./adult-supplements.html",
   "./antoshka-food.html",
   "./roshen-chocolate.html",

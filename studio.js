@@ -82,9 +82,9 @@ function trashItem(entityType, data, label, extra = {}) {
 }
 
 async function setView(view) {
-  if(view==='supplements'&&window.matchMedia('(max-width:760px)').matches){location.href='./adult-supplements.html?build=tabletki1';return;}
-  if(view==='roshen'&&window.matchMedia('(max-width:760px)').matches){location.href='./roshen-chocolate.html?build=tabletki1';return;}
-  if(view==='food'&&window.matchMedia('(max-width:760px)').matches){location.href='./antoshka-food.html?build=tabletki1';return;}
+  if(view==='supplements'&&window.matchMedia('(max-width:760px)').matches){location.href='./adult-supplements.html?build=import1';return;}
+  if(view==='roshen'&&window.matchMedia('(max-width:760px)').matches){location.href='./roshen-chocolate.html?build=import1';return;}
+  if(view==='food'&&window.matchMedia('(max-width:760px)').matches){location.href='./antoshka-food.html?build=import1';return;}
   if(currentView==='warehouse'&&view!=='warehouse'){
     try{state=await api.state();normalizeState();}catch(error){status.textContent=`刷新资料失败：${error.message}`;return;}
   }
