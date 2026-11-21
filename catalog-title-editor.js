@@ -1,6 +1,6 @@
 // Shared, browser-local export title and introduction editing for both catalogues.
 (() => {
-  const kind=location.pathname.includes('roshen')?'roshen':'antoshka';
+  const kind=location.pathname.includes('adult-supplements')?'supplements':location.pathname.includes('roshen')?'roshen':'antoshka';
   const keys={name:'zz-catalog-export-titles-v1-'+kind,intro:'zz-catalog-export-intros-v1-'+kind,exportPriceText:'zz-catalog-export-prices-v1-'+kind};
   for(const [field,key] of Object.entries(keys))try{const saved=JSON.parse(localStorage.getItem(key)||'{}');for(const [url,value] of Object.entries(saved))if(uniqueRows.has(url)&&typeof value==='string')productEdits.set(url,{...productEdits.get(url),[field]:value})}catch{}
   function saveCopy(){let saved=true;for(const [field,key] of Object.entries(keys))try{const values={};for(const [url,edit] of productEdits)if(typeof edit[field]==='string')values[url]=edit[field];localStorage.setItem(key,JSON.stringify(values))}catch{saved=false}return saved}

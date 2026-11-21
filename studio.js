@@ -82,8 +82,9 @@ function trashItem(entityType, data, label, extra = {}) {
 }
 
 async function setView(view) {
-  if(view==='roshen'&&window.matchMedia('(max-width:760px)').matches){location.href='./roshen-chocolate.html?build=nordic1';return;}
-  if(view==='food'&&window.matchMedia('(max-width:760px)').matches){location.href='./antoshka-food.html?build=nordic1';return;}
+  if(view==='supplements'&&window.matchMedia('(max-width:760px)').matches){location.href='./adult-supplements.html?build=supplements1';return;}
+  if(view==='roshen'&&window.matchMedia('(max-width:760px)').matches){location.href='./roshen-chocolate.html?build=supplements1';return;}
+  if(view==='food'&&window.matchMedia('(max-width:760px)').matches){location.href='./antoshka-food.html?build=supplements1';return;}
   if(currentView==='warehouse'&&view!=='warehouse'){
     try{state=await api.state();normalizeState();}catch(error){status.textContent=`刷新资料失败：${error.message}`;return;}
   }
@@ -92,10 +93,11 @@ async function setView(view) {
   document.querySelectorAll(".side nav button").forEach((button) => button.classList.toggle("active", button.dataset.view === view));
   document.querySelectorAll(".view").forEach((item) => item.classList.remove("active"));
   $(`#${view}View`).classList.add("active");
-  const titles = { products: "图片作品", warehouse: "产品库", food: "食品选品制图", roshen: "roshen巧克力选品制图", assets: "图片素材", copy: "文案素材", templates: "图片模板", exports: "导出历史", trash: "垃圾箱", backup: "备份与恢复" };
+  const titles = { products: "图片作品", warehouse: "产品库", food: "食品选品制图", roshen: "roshen巧克力选品制图", supplements: "保健品选品", assets: "图片素材", copy: "文案素材", templates: "图片模板", exports: "导出历史", trash: "垃圾箱", backup: "备份与恢复" };
   if(view==='warehouse'){const frame=$('#warehouseFrame');frame.src=frame.dataset.src;}
   if(view==='roshen'){const frame=$('#roshenFrame');if(!frame.getAttribute('src'))frame.src=frame.dataset.src;}
   if(view==='food'){const frame=$('#foodFrame');if(!frame.getAttribute('src'))frame.src=frame.dataset.src;}
+  if(view==='supplements'){const frame=$('#supplementsFrame');if(!frame.getAttribute('src'))frame.src=frame.dataset.src;}
   $("#viewTitle").textContent = titles[view];
   render();
 }
@@ -349,5 +351,5 @@ api.state().then((loadedState) => {
   status.textContent = `已读取 ${state.products.length} 件产品、${state.assets.length} 个素材。`;
   render();
   const requestedView=new URLSearchParams(location.search).get('view');
-  if(['products','warehouse','food','roshen','assets','copy','templates','exports','trash','backup'].includes(requestedView))setView(requestedView);
+  if(['products','warehouse','food','roshen','supplements','assets','copy','templates','exports','trash','backup'].includes(requestedView))setView(requestedView);
 }).catch((error) => { status.textContent = `无法读取同步资料：${error.message}。请检查网络后刷新重试。`; });
