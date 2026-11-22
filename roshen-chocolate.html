@@ -171,4 +171,4 @@ const updateLogoWithDraft=updateLogoPreview;updateLogoPreview=function(){updateL
 const restoreSelectedText=$('restoreProductText').onclick;$('restoreProductText').onclick=()=>{restoreSelectedText();saveDraft()};
 const renderAndSave=render;render=function(){renderAndSave();saveDraft()};render();window.addEventListener('pagehide',saveDraft);
 if(window.ZZStudioCloudApi?.isCloud())window.ZZStudioCloudApi.requireSession().catch(()=>{$('exportStatus').textContent='账号暂时无法连接，请刷新重试。'});
-</script><script src="./catalog-title-editor.js?v=copy4"></script><script src="./catalog-preview-sort.js?v=sort1"></script><script src="./catalog-link-import.js?v=import2"></script></html>
+</script><script src="./catalog-title-editor.js?v=copy4"></script><script src="./catalog-preview-sort.js?v=sort1"></script><script src="./catalog-product-parser.js?v=parse1"></script><script src="./catalog-link-import.js?v=import3"></script></html>
