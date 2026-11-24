@@ -82,7 +82,7 @@ function trashItem(entityType, data, label, extra = {}) {
 }
 
 async function setView(view) {
-  if(view==='supplements'&&window.matchMedia('(max-width:760px)').matches){location.href='./adult-supplements.html?build=type2';return;}
+  if(view==='supplements'&&window.matchMedia('(max-width:760px)').matches){location.href='./adult-supplements.html?build=calcium1';return;}
   if(view==='roshen'&&window.matchMedia('(max-width:760px)').matches){location.href='./roshen-chocolate.html?build=type2';return;}
   if(view==='food'&&window.matchMedia('(max-width:760px)').matches){location.href='./antoshka-food.html?build=type2';return;}
   if(currentView==='warehouse'&&view!=='warehouse'){

@@ -1,5 +1,6 @@
-const CACHE_NAME = "zz-studio-shell-20261122-precision1";
+const CACHE_NAME = "zz-studio-shell-20261124-calcium1";
 const SHELL = [
+  "./adult-supplements-images-02.json",
   "./catalog-product-parser.js",
   "./catalog-supplement-filter.js",
   "./catalog-link-import.js",
